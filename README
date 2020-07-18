@@ -1,0 +1,4 @@
+### pakages used
+tensorflow = '2.2.0'\
+numpy = '1.18.1'\
+gym ='0.17.2'\
