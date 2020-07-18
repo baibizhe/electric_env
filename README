@@ -2,3 +2,24 @@
 tensorflow = '2.2.0'\
 numpy = '1.18.1'\
 gym ='0.17.2'\
+### how to use :
+* It should have at least the following files:
+  ```sh
+  electric-env/
+    README.md
+    setup.py
+    ...
+    gym_foo/
+      __init__.py
+      envs/
+        __init__.py
+        foo_env.py
+        ...
+  ```
+  if you do not want register any new enviroment ,please dont modify ant \_\_ini__.py files, and setup.py \
+   #### register custom enviroment  as following:
+ in windows terminal :
+ ```sh
+> pip install -e gym-foo`
+ ```
+Then run main.py
