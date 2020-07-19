@@ -25,7 +25,7 @@ class FooEnv(gym.Env):
         self.delta_volume = 10
         self.max_seller_voloum = 90000
         self.min_seller_voloum = 20000
-        self.seller_volume = np.random.uniform(30000, 80000, [1, num_of_buyer])[0]
+        self.seller_volume = np.random.uniform(50000, 80000, [1, num_of_buyer])[0]
         self.buyer_voloum = np.random.uniform(30000, 80000, [1, num_of_buyer])[0]  # 随机设置了买方容量以用测试
 
         #action space 是每一次价格变量的区间

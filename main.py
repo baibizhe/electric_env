@@ -31,6 +31,7 @@ if __name__ == '__main__':
             if j==400:
                 done = True
                 result[i] = np.concatenate((new_state,[reward]))
+                print("end with %s"%str(new_state))
                 # result[i] = new_state
         # volume = sum([new_state[1], new_state[3], new_state[5]])
         # print("ending seller price and volume ,average profit  :%s %d" % (str(new_state), reward / volume))
