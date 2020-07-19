@@ -111,7 +111,7 @@ class Actor(object):
                                      bias_initializer=random_uniform(-f2, f2))
             # batch2 = tf.compat.v1.layers.batch_normalization(dense2)
             batch2 = dense2
-            layer2_activation = tf.nn.sigmoid(batch2)
+            layer2_activation = tf.nn.relu(batch2)
             f3 = 0.003
             mu = tf.compat.v1.layers.dense(layer2_activation, units=self.n_actions,
                             activation='tanh',
