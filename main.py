@@ -1,28 +1,29 @@
 import gym
 import numpy as  np
 from ddpf2 import Agent
+import  matplotlib.pyplot as plt
 
 # from utils import  plotLearning
 #todo : 改成p-replay buffer
-import  matplotlib.pyplot as plt
 if __name__ == '__main__':
 
     env = gym.make('gym_foo:foo-v0')
-    #todo : actor learning rate is 1e-4 ,critic learning rate is 1e-3
-    agent = Agent(alpha=1e-4, beta=1e-3, input_dims=[6], tau=0.02, env=env, batch_size=64, layer1_size=400,
+    agent = Agent(alpha=0.02, beta=0.03, input_dims=[6], tau=0.01, env=env, batch_size=32, layer1_size=500,
                   layer2_size=300, n_actions=6)
     np.random.seed(0)
     score_history = []
-    size = 100
-    result = np.zeros((size,agent.n_actions+1))
-    for i in range(size):
+    EPISODES = 500
+    result = np.zeros((EPISODES,agent.n_actions+1))
+    for i in range(EPISODES):
         obs = env.reset()
+        print(i)
+
+        print("episode start with %s"%(str(obs)))
         # print("init seller -price :%s" % (str(obs)))
         #
         # print("asdasda",obs)
         done = False
-        score = 0
-        print(i)
+        # score = 0
         j = 0
         while not done:
             act = agent.choose_action(obs)
@@ -30,7 +31,7 @@ if __name__ == '__main__':
             new_state, reward, done, info = env.step(act)
             agent.remember(obs, act, reward, new_state, int(done))
             agent.learn()
-            score += reward
+            # score += reward
             obs = new_state
             # print("reward %.2f , obs%s , act %s,new_state %s"%(reward,str(obs),str(act),str(new_state)))
             j+=1
@@ -41,10 +42,11 @@ if __name__ == '__main__':
                 done = True
                 result[i] = np.concatenate((new_state,[reward]))
                 # result[i] = new_state
-                avg = sum([new_state[1],new_state[3],new_state[5]])
-                print("ending seller price and volume ,average profit  :%s %d" % (str(new_state),reward/avg))
-        score_history.append(score)
-        print('episode ', i, 'score %.2f' % score, '100 game vag %.2f' % np.mean(score_history[-100:]))
+        avg = sum([new_state[1], new_state[3], new_state[5]])
+        print("ending seller price and volume ,average profit  :%s %d" % (str(new_state), reward / avg))
+        score_history.append(reward)
+        print('episode ', i, 'score %.2f' % reward, '100 game vag %.2f' % np.mean(score_history[-100:]))
+        print("-----------------------------------------------")
     filename = 'pendulum.png'
     x = range(len(result))
     plt.subplot(3,1,1)
@@ -65,6 +67,6 @@ if __name__ == '__main__':
     plt.plot(x, result[:, 6],label = "reward",color= 'coral')
     plt.legend(loc='upper right')
 
-
+    plt.savefig("my main")
     plt.show()
         # plotLearning(score_history,filename,window=100 )

@@ -180,6 +180,7 @@ def calculate_total_amount(match_result):
 # seller_num = [[345.3, 63120], [346.2, 57021],[347.4,50117],[348.8,32016],[349.7,26163]]
 # # 进行匹配
 # match_result,clear_price = rank(buyer_name,buyer_num,seller_name,seller_num)
+# print(match_result)
 # # 计算每一个售电方的总成交电量
 #
 # for i in seller_name:
@@ -192,3 +193,10 @@ def calculate_total_amount(match_result):
 #     value = str(amount)
 #     print(i+"  匹配电量  "+value)
 #
+random_name = ["a", "b", "c"]  # 随机取的名字
+#
+seller_num = [[379.7390435728891, 13918.888088208376], [350.4500071985927, 46853.51455029531], [318.1118151155838, 23628.95238786419]]
+buyer_num = [[446.5236895613607, 27222.100235128702], [424.2412439023235, 19162.2246721079], [415.57281769852966, 16086.718740867243]]
+match_result,clear_price = rank(random_name,buyer_num,random_name,seller_num)
+
+print(match_result,clear_price)

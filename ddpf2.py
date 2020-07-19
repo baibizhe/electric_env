@@ -101,14 +101,17 @@ class Actor(object):
             dense1 = tf.compat.v1.layers.dense(self.input, units=self.fc1_dims,
                                      kernel_initializer=random_uniform(-f1, f1),
                                      bias_initializer=random_uniform(-f1, f1))
-            batch1 = tf.compat.v1.layers.batch_normalization(dense1)
+            # batch1 = tf.compat.v1.layers.batch_normalization(dense1)
+            batch1 = dense1
+
             layer1_activation = tf.nn.relu(batch1)
             f2 = 1. / np.sqrt(self.fc2_dims)
             dense2 = tf.compat.v1.layers.dense(layer1_activation, units=self.fc2_dims,
                                      kernel_initializer=random_uniform(-f2, f2),
                                      bias_initializer=random_uniform(-f2, f2))
-            batch2 = tf.compat.v1.layers.batch_normalization(dense2)
-            layer2_activation = tf.nn.relu(batch2)
+            # batch2 = tf.compat.v1.layers.batch_normalization(dense2)
+            batch2 = dense2
+            layer2_activation = tf.nn.sigmoid(batch2)
             f3 = 0.003
             mu = tf.compat.v1.layers.dense(layer2_activation, units=self.n_actions,
                             activation='tanh',
@@ -171,14 +174,16 @@ class Critic(object):
             dense1 = tf.compat.v1.layers.dense(self.input, units=self.fc1_dims,
                                      kernel_initializer=random_uniform(-f1, f1),
                                      bias_initializer=random_uniform(-f1, f1))
-            batch1 = tf.compat.v1.layers.batch_normalization(dense1)
+            # batch1 = tf.compat.v1.layers.batch_normalization(dense1)
+            batch1 = dense1
             layer1_activation = tf.nn.relu(batch1)
 
             f2 = 1. / np.sqrt(self.fc2_dims)
             dense2 = tf.compat.v1.layers.dense(layer1_activation, units=self.fc2_dims,
                                      kernel_initializer=random_uniform(-f2, f2),
                                      bias_initializer=random_uniform(-f2, f2))
-            batch2 = tf.compat.v1.layers.batch_normalization(dense2)
+            # batch2 = tf.compat.v1.layers.batch_normalization(dense2)
+            batch2 = dense2
 
             action_in = tf.compat.v1.layers.dense(self.actions, units=self.fc2_dims,
                                         activation='relu')
