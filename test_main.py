@@ -10,7 +10,7 @@ tf.compat.v1.set_random_seed(1)
 tf.compat.v1.disable_eager_execution()
 score_history=[]
 
-MAX_EPISODES = 200
+MAX_EPISODES = 250
 LR_A = 0.2  # learning rate for actor
 LR_C = 0.3  # learning rate for critic
 GAMMA = 0.999  # reward discount
@@ -314,21 +314,9 @@ actor.add_grad_to_graph(critic.a_grads)
 M = Memory(MEMORY_CAPACITY)
 
 saver = tf.compat.v1.train.Saver(max_to_keep=100)
-
-if LOAD_MODEL:
-    all_ckpt = tf.train.get_checkpoint_state('./data', 'checkpoint').all_model_checkpoint_paths
-    saver.restore(sess, all_ckpt[-1])
-else:
-    if os.path.isdir(DATA_PATH): shutil.rmtree(DATA_PATH)
-    os.mkdir(DATA_PATH)
-    sess.run(tf.compat.v1.global_variables_initializer())
-
-if OUTPUT_GRAPH:
-    tf.compat.v1.summary.FileWriter('logs', graph=sess.graph)
-
 var = 3  # control exploration
 var_min = 0.01
-result = np.zeros((MAX_EPISODES, 3 + 1))
+result = np.zeros((MAX_EPISODES, 6 + 1))
 
 for i_episode in range(MAX_EPISODES):
     # s = (hull angle speed, angular velocity, horizontal speed, vertical speed, position of joints and joints angular speed, legs contact with ground, and 10 lidar rangefinder measurements.)
@@ -379,14 +367,14 @@ for i_episode in range(MAX_EPISODES):
 
             done = '| Achieve ' if env.unwrapped.hull.position[0] >= END_POINT else '| -----'
             print('Episode:', i_episode,
-                  done,
-                  '| Running_r: %i' % int(running_r),
-                  '| Epi_r: %.2f' % ep_r,
-                  '| Exploration: %.3f' % var,
-                  '| Pos: %.i' % int(env.unwrapped.hull.position[0]),
-                  '| LR_A: %.6f' % sess.run(LR_A),
-                  '| LR_C: %.6f' % sess.run(LR_C),
-                  )
+                done,
+                '| Running_r: %i' % int(running_r),
+                '| Epi_r: %.2f' % ep_r,
+                '| Exploration: %.3f' % var,
+                '| Pos: %.i' % int(env.unwrapped.hull.position[0]),
+                '| LR_A: %.6f' % sess.run(LR_A),
+                '| LR_C: %.6f' % sess.run(LR_C),
+                )
             break
 
 
@@ -398,22 +386,22 @@ for i_episode in range(MAX_EPISODES):
 x = range(len(result))
 plt.subplot(3,1,1)
 
-plt.title('price line ')
+plt.title('price line ,alpha = %s beta =%s'%(LR_A,LR_C))
 plt.plot(x,result[:,0])
-plt.plot(x, result[:, 1])
 plt.plot(x, result[:, 2])
+plt.plot(x, result[:, 4])
 
-# plt.subplot(3,1,2)
-# plt.title('volume line ')
-# plt.plot(x, result[:, 1])
-# plt.plot(x, result[:, 3])
-# plt.plot(x, result[:, 5])
+plt.subplot(3,1,2)
+plt.title('volume line ')
+plt.plot(x, result[:, 1])
+plt.plot(x, result[:, 3])
+plt.plot(x, result[:, 5])
 
 plt.subplot(3,1,3)
 plt.title('total profit line')
-plt.plot(x, result[:, 3],label = "reward",color= 'coral')
+plt.plot(x, result[:, 6],label = "reward",color= 'coral')
 plt.legend(loc='upper right')
 
 
-plt.savefig("his my main only with prices")
+plt.savefig("test_main")
 

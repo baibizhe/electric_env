@@ -97,7 +97,7 @@ class FooEnv(gym.Env):
         for i in range(self.num_of_seller):
             states.append(prices[i])
             states.append(voloum[i])
-        self.state = states
+        self.state = np.array(states)
         return np.array(self.state)
 
 

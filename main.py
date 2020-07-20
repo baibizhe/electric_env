@@ -17,7 +17,7 @@ if __name__ == '__main__':
                       layer2_size=300, n_actions=6)
         np.random.seed(0)
         score_history = []
-        EPISODES = 4
+        EPISODES = 250
         result = np.zeros((EPISODES,agent.n_actions+1))
         for i in range(EPISODES):
             obs = env.reset()
@@ -33,7 +33,7 @@ if __name__ == '__main__':
                 obs = new_state
                 # print("reward %.2f , obs%s , act %s,new_state %s"%(reward,str(obs),str(act),str(new_state)))
                 j+=1
-                if j==10:
+                if j==1000:
                     done = True
                     result[i] = np.concatenate((new_state,[reward]))
                     print("end with %s"%str(new_state))
@@ -48,8 +48,8 @@ if __name__ == '__main__':
         plt.subplot(3,1,1)
         plt.title('price line ,alpha = %s beta =%s'%(str(alphas[ii]),str(betas[ii])))
         plt.plot(x,result[:,0])
-        plt.plot(x, result[:, 1])
         plt.plot(x, result[:, 2])
+        plt.plot(x, result[:, 4])
 
         plt.subplot(3,1,2)
         plt.title('volume line ')
@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
         plt.subplot(3,1,3)
         plt.title('total profit line')
-        plt.plot(x, result[:, 3],label = "reward",color= 'coral')
+        plt.plot(x, result[:, 6],label = "reward",color= 'coral')
         plt.legend(loc='upper right')
 
         plt.savefig("image/my main with round %d"%ii)
