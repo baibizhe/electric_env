@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 # from tensorflow.initializers import random_uniform
 tf.compat.v1.disable_eager_execution()
-
+tf.compat.v1.reset_default_graph()
 def random_uniform(f1,f2):
     return tf.compat.v1.initializers.random_uniform(f1,f2)
 class OUActionNoise(object):
