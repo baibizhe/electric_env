@@ -6,7 +6,7 @@ import gym
 from gym import spaces
 from gym.utils import seeding
 from os import  path
-from  calPrice import  rank
+from  utils import  rank
 
 class FooEnv(gym.Env):
 
@@ -26,13 +26,13 @@ class FooEnv(gym.Env):
         self.max_seller_voloum = 90000
         self.min_seller_voloum = 20000
         self.seller_volume = np.random.uniform(50000, 80000, [1, num_of_buyer])[0]
-        self.buyer_voloum = np.random.uniform(30000, 50000, [1, num_of_buyer])[0]  # 随机设置了买方容量以用测试
+        self.buyer_voloum = np.random.uniform(30000, 80000, [1, num_of_buyer])[0]  # 随机设置了买方容量以用测试
 
         #action space 是每一次价格变量的区间
         #todo: 底下这两行记得改成general的
 
-        low = np.array([-self.deltaprice,-self.delta_volume,-self.deltaprice,-self.delta_volume,-self.deltaprice,-self.delta_volume])
-        high = np.array([self.deltaprice,self.delta_volume,self.deltaprice,self.delta_volume,self.deltaprice,self.delta_volume])
+        low = np.array([0,0,0,0,0,0])
+        high = np.array([self.max_seller_price,self.max_seller_voloum,self.max_seller_price,self.max_seller_voloum,self.max_seller_price,self.max_seller_voloum])
         # low = np.array([-self.deltaprice,-self.deltaprice,-self.deltaprice])
         # high = np.array([self.deltaprice,self.deltaprice,self.deltaprice])
 
@@ -56,13 +56,18 @@ class FooEnv(gym.Env):
         return [seed]
 
     def step(self, action):
+        self.state = action #update self state with action
         #todo:给价格和volume加一个上限
+        for i in range(len(self.state)):
+            if i%2 ==0:
+                self.state[i] = max(self.max_seller_price,min(0,self.state[i]))
+            else:
+                self.state[i] = max(self.max_seller_voloum, min(0, self.state[i]))
 
         buyer_price = self._get_buyer_random_price() #找到当前状态的买方随机价格
         buyer_random_name = ["b_a","b_b","b_c"] #随机取的名字
         seller_random_name = ["s_a","s_b","s_c"] #随机取的名字
 
-        self.state = [self.state[i]+action[i] for i in range(self.num_of_seller*2)] #update self state with action
         # self.state = [self.state[i]+action[i] for i in range(self.num_of_seller)] #update self state with action
 
         buyer_num = [[self.buyer_voloum[i],buyer_price[i]] for i in  range(self.num_of_buyer)]
@@ -85,9 +90,7 @@ class FooEnv(gym.Env):
         reward = 0
         for i in range(len(match_result)):
             reward+= match_result[i][2]*(clear_price- self.cost)
-        volume  = [self.state[i] for i in range(1,self.num_of_seller*2,2)]
-        max =  sum(volume) * self.max_seller_price
-        return np.array(self.state), reward-max, False, {}
+        return np.array(self.state), reward, False, {}
 
     def reset(self):
         prices = self.np_random.uniform(self.min_seller_price, self.max_seller_price,self.num_of_seller)
@@ -99,7 +102,7 @@ class FooEnv(gym.Env):
         for i in range(self.num_of_seller):
             states.append(prices[i])
             states.append(voloum[i])
-        self.state = np.array(states)
+        self.state = states
         return np.array(self.state)
 
 
@@ -108,7 +111,7 @@ class FooEnv(gym.Env):
 
 
     def _get_buyer_random_price(self):
-        return self.np_random.uniform(self.min_buyer_price, self.max_seller_price,self.num_of_buyer)
+        return self.np_random.uniform(self.min_buyer_price, self.max_buyer_price,self.num_of_buyer)
 
 
 

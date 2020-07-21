@@ -6,6 +6,7 @@
 # seller_num = [[150, 4000],[250, 1500],[200, 2000],[400, 3000],[300, 3000]]  [电价，电量]
 # 说明：buyer_name是购电方名称列表，buyer_num是购电方申报数据列表，名称与数据按照顺序一一对应。数据里前面的是电价，后面的是电量。对于售电方同理。
 import numpy as np
+from random import  sample
 def rank(buyer_name, buyer_num, seller_name, seller_num):
     buyer_amount = []
     for i in buyer_num:
@@ -193,6 +194,25 @@ def calculate_total_amount(match_result):
 #     value = str(amount)
 #     print(i+"  匹配电量  "+value)
 #
+def generate_volume(num_of_agent,total_volume):
+    """
+    生成 num_of_agent个总和为total_volume的数字
+    >>> summa = 0
+    >>> count =1
+    >>> while True:
+    >>>     summa += sum(generate_seller_volume(5,100))
+    >>>     print(summa/count)
+    >>>     count+=1
+    >>>100
+    >>>100
+    >>>100
+    .
+    .
+    .
+    """
+    dividers =sorted(sample(range(1,total_volume),num_of_agent-1))
+    return [a-b for a,b in zip(dividers +[total_volume],[0]+dividers)]
+
 random_name = ["a", "b", "c"]  # 随机取的名字
 #
 seller_num = [[379.7390435728891, 13918.888088208376], [350.4500071985927, 46853.51455029531], [318.1118151155838, 23628.95238786419]]
