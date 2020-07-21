@@ -3,17 +3,22 @@ import numpy as  np
 from ddpf2 import Agent
 import  matplotlib.pyplot as plt
 import  tensorflow as tf
-
+import  os
 tf.compat.v1.reset_default_graph()
 # from utils import  plotLearning
+#
+# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 #todo : 改成p-replay buffer
+# todo: 给噪声加衰减函数
+#todo： 试着加上买房的参数到状态
 if __name__ == '__main__':
-    alphas = [0.00001,0.00005,0.0001,0.0005,0.001,0.005,0.01,0.05,0.1]
-    betas = [0.00002,0.00007,0.0002,0.0007,0.002,0.007,0.02,0.07,0.2]
+    alphas = [0.00005,0.0001,0.0005,0.001,0.005,0.01,0.05,0.1]
+    betas = [0.00007,0.0002,0.0007,0.002,0.007,0.02,0.07,0.2]
     for ii in range((len(alphas))):
         tf.compat.v1.reset_default_graph()
         env = gym.make('gym_foo:foo-v0')
-        agent = Agent(alpha=alphas[ii], beta=betas[ii], input_dims=[6], tau=0.01, env=env, batch_size=32, layer1_size=500,
+        agent = Agent(alpha=alphas[ii], beta=betas[ii], input_dims=[6], tau=0.01, env=env, batch_size=128, layer1_size=500,
                       layer2_size=300, n_actions=6)
         np.random.seed(0)
         score_history = []
@@ -33,7 +38,7 @@ if __name__ == '__main__':
                 obs = new_state
                 # print("reward %.2f , obs%s , act %s,new_state %s"%(reward,str(obs),str(act),str(new_state)))
                 j+=1
-                if j==1000:
+                if j==10000:
                     done = True
                     result[i] = np.concatenate((new_state,[reward]))
                     print("end with %s"%str(new_state))

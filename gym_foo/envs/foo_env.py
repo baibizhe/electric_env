@@ -26,7 +26,7 @@ class FooEnv(gym.Env):
         self.max_seller_voloum = 90000
         self.min_seller_voloum = 20000
         self.seller_volume = np.random.uniform(50000, 80000, [1, num_of_buyer])[0]
-        self.buyer_voloum = np.random.uniform(30000, 80000, [1, num_of_buyer])[0]  # 随机设置了买方容量以用测试
+        self.buyer_voloum = np.random.uniform(30000, 50000, [1, num_of_buyer])[0]  # 随机设置了买方容量以用测试
 
         #action space 是每一次价格变量的区间
         #todo: 底下这两行记得改成general的
@@ -85,7 +85,9 @@ class FooEnv(gym.Env):
         reward = 0
         for i in range(len(match_result)):
             reward+= match_result[i][2]*(clear_price- self.cost)
-        return np.array(self.state), reward, False, {}
+        volume  = [self.state[i] for i in range(1,self.num_of_seller*2,2)]
+        max =  sum(volume) * self.max_seller_price
+        return np.array(self.state), reward-max, False, {}
 
     def reset(self):
         prices = self.np_random.uniform(self.min_seller_price, self.max_seller_price,self.num_of_seller)
