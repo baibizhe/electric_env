@@ -193,7 +193,38 @@ def calculate_total_amount(match_result):
 #     amount = select_clear_amount(i,match_result)
 #     value = str(amount)
 #     print(i+"  匹配电量  "+value)
+# def set_data_for_seller( path="data/seller_data"):
+#     """"
+#     设置卖方的成本函数，
+#     例子 [[76633,0.0016 , 102 , 4,560,000],[....],[....].. ] :
+#     第一个卖家 最大申报电量=76633, a_b = 0.0016 , b_g = 102 , c_g =4,560,000
+#     总共有 num_of_seller个 ， 成本函数默认从data/seller_data.txt中读取
+#     """
+#     result = np.loadtxt(path)
+#     max_seller_volume = result[:, 0]  # 设置卖方的最大申报电量
+#     costfuncton_for_sellers = result[:, 1:result.shape[1]]  # 列切片，去掉第一列。
+#     return costfuncton_for_sellers
 #
+# buyer_name = ["s_a", "s_b", "s_c", "s_d", "s_e", "s_f", "s_g", "s_h", "s_i"]  # 随机取的名字
+# seller_name = ["b_big", "b_mid", "b_mid2", "b_small", "b_small"]  # 随机取的名字
+# seller_num = [[61.93, 20828.52], [50.64, 53530.98], [400.00, 0.00], [292.61, 34000.00], [383.57, 0.00]]
+# buyer_num = [[399.75, 45324.00], [392.75, 31370.00], [366.00, 28219.00], [304.00, 25281.00], [363.75, 18291.00],[ 363.00, 7971.00], [371.00, 7330.00], [351.75, 6989.00], [371.50, 75.00]]
+# match_result,clear_price = rank(buyer_name,buyer_num,seller_name,seller_num)
+# print(rank(buyer_name,buyer_num,seller_name,seller_num))
+# cost = set_data_for_seller()
+# for i in seller_name:
+#     print(select_clear_amount(i,match_result))
+# total_cost =0
+#
+#
+# for i in range(len(seller_num)):
+#     cc = seller_num[i][1]**2*cost[i][0] +seller_num[i][1]*cost[i][1]+cost[i][2]
+#     rr = select_clear_amount(seller_name[i],match_result) *clear_price
+#     total_cost+= cc
+#     print(cc,"profit:",rr-cc)
+#
+# r = calculate_total_amount(match_result)*clear_price
+# print(r-total_cost)
 def generate_volume(num_of_agent,total_volume):
     """
     生成 num_of_agent个总和为total_volume的数字
@@ -211,12 +242,14 @@ def generate_volume(num_of_agent,total_volume):
     .
     """
     dividers =sorted(sample(range(1,total_volume),num_of_agent-1))
-    return [a-b for a,b in zip(dividers +[total_volume],[0]+dividers)]
+    result = sorted([a-b for a,b in zip(dividers +[total_volume],[0]+dividers)])
+    result.reverse()
+    return  np.array(result,dtype=np.float32)
 
-random_name = ["a", "b", "c"]  # 随机取的名字
-#
-seller_num = [[379.7390435728891, 13918.888088208376], [350.4500071985927, 46853.51455029531], [318.1118151155838, 23628.95238786419]]
-buyer_num = [[446.5236895613607, 27222.100235128702], [424.2412439023235, 19162.2246721079], [415.57281769852966, 16086.718740867243]]
-match_result,clear_price = rank(random_name,buyer_num,random_name,seller_num)
+# random_name = ["a", "b", "c"]  # 随机取的名字
+# #
+# seller_num = [[379.7390435728891, 13918.888088208376], [350.4500071985927, 46853.51455029531], [318.1118151155838, 23628.95238786419]]
+# buyer_num = [[446.5236895613607, 27222.100235128702], [424.2412439023235, 19162.2246721079], [415.57281769852966, 16086.718740867243]]
+# match_result,clear_price = rank(random_name,buyer_num,random_name,seller_num)
 
-print(match_result,clear_price)
+# print(match_result,clear_price)

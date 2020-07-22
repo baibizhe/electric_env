@@ -4,15 +4,21 @@ import gym
 import os
 import shutil
 import  matplotlib.pyplot as plt
+from tensorflow.compat.v1 import ConfigProto
+from tensorflow.compat.v1 import InteractiveSession
+config = ConfigProto()
+config.gpu_options.allow_growth = True
+session = InteractiveSession(config=config)
 
 np.random.seed(1)
 tf.compat.v1.set_random_seed(1)
 tf.compat.v1.disable_eager_execution()
 score_history=[]
-
-MAX_EPISODES = 250
-LR_A = 0.2  # learning rate for actor
-LR_C = 0.3  # learning rate for critic
+NUM_OF_SELLER = 5
+NUM_OF_BUYER = 9
+MAX_EPISODES = 400
+LR_A = 0.002  # learning rate for actor
+LR_C = 0.005  # learning rate for critic
 GAMMA = 0.999  # reward discount
 REPLACE_ITER_A = 1700
 REPLACE_ITER_C = 1500
@@ -317,91 +323,98 @@ saver = tf.compat.v1.train.Saver(max_to_keep=100)
 var = 3  # control exploration
 var_min = 0.01
 result = np.zeros((MAX_EPISODES, 6 + 1))
+def run():
+    for i_episode in range(MAX_EPISODES):
+        s = env.reset()
+        ep_r = 0
+        j = 0
+        while True:
+            a = actor.choose_action(s)
+            a = np.clip(np.random.normal(a, var), -1, 1)    # add randomness to action selection for exploration
+            s_, r, done, _ = env.step(a)    # r = total 300+ points up to the far end. If the robot falls, it gets -100.
+            j+=1
+            if j ==5000:
+                done = True
+                result[i] = np.concatenate((s_[0:NUM_OF_SELLER * 2], [r]))
+                print("episode end with  " + str(["%.2f" % val for val in s_[0:NUM_OF_SELLER * 2]]))
+            transition = np.hstack((s, a, [r], s_))
+            max_p = np.max(M.tree.tree[-M.tree.capacity:])
+            M.store(max_p, transition)
 
-for i_episode in range(MAX_EPISODES):
-    # s = (hull angle speed, angular velocity, horizontal speed, vertical speed, position of joints and joints angular speed, legs contact with ground, and 10 lidar rangefinder measurements.)
-    s = env.reset()
-    ep_r = 0
-    j = 0
-    while True:
-        if RENDER:
-            env.render()
-        a = actor.choose_action(s)
-        a = np.clip(np.random.normal(a, var), -1, 1)    # add randomness to action selection for exploration
-        s_, r, done, _ = env.step(a)    # r = total 300+ points up to the far end. If the robot falls, it gets -100.
-        j+=1
-        if j ==500:
-            print("ending seller price and volume  :%s ,average profit  %d" % (str(s_), r))
-            break
-        transition = np.hstack((s, a, [r], s_))
-        max_p = np.max(M.tree.tree[-M.tree.capacity:])
-        M.store(max_p, transition)
+            if GLOBAL_STEP.eval(sess) > MEMORY_CAPACITY/20:
+                var = max([var*0.9999, var_min])  # decay the action randomness
+                tree_idx, b_M, ISWeights = M.prio_sample(BATCH_SIZE)    # for critic update
+                b_s = b_M[:, :STATE_DIM]
+                b_a = b_M[:, STATE_DIM: STATE_DIM + ACTION_DIM]
+                b_r = b_M[:, -STATE_DIM - 1: -STATE_DIM]
+                b_s_ = b_M[:, -STATE_DIM:]
 
-        if GLOBAL_STEP.eval(sess) > MEMORY_CAPACITY/20:
-            var = max([var*0.9999, var_min])  # decay the action randomness
-            tree_idx, b_M, ISWeights = M.prio_sample(BATCH_SIZE)    # for critic update
-            b_s = b_M[:, :STATE_DIM]
-            b_a = b_M[:, STATE_DIM: STATE_DIM + ACTION_DIM]
-            b_r = b_M[:, -STATE_DIM - 1: -STATE_DIM]
-            b_s_ = b_M[:, -STATE_DIM:]
+                abs_td = critic.learn(b_s, b_a, b_r, b_s_, ISWeights)
+                actor.learn(b_s)
+                for i in range(len(tree_idx)):  # update priority
+                    idx = tree_idx[i]
+                    M.update(idx, abs_td[i])
+            if GLOBAL_STEP.eval(sess) % SAVE_MODEL_ITER == 0:
+                ckpt_path = os.path.join(DATA_PATH, 'DDPG.ckpt')
+                save_path = saver.save(sess, ckpt_path, global_step=GLOBAL_STEP, write_meta_graph=False)
+                print("\nSave Model %s\n" % save_path)
 
-            abs_td = critic.learn(b_s, b_a, b_r, b_s_, ISWeights)
-            actor.learn(b_s)
-            for i in range(len(tree_idx)):  # update priority
-                idx = tree_idx[i]
-                M.update(idx, abs_td[i])
-        if GLOBAL_STEP.eval(sess) % SAVE_MODEL_ITER == 0:
-            ckpt_path = os.path.join(DATA_PATH, 'DDPG.ckpt')
-            save_path = saver.save(sess, ckpt_path, global_step=GLOBAL_STEP, write_meta_graph=False)
-            print("\nSave Model %s\n" % save_path)
+            if done:
+                print("ending seller price and volume ,profit  :%s %d" % (str(s_), r))
 
-        if done:
-            print("ending seller price and volume ,profit  :%s %d" % (str(s_), r))
+                if "running_r" not in globals():
+                    running_r = ep_r
+                else:
+                    running_r = 0.95*running_r + 0.05*ep_r
+                if running_r > DISPLAY_THRESHOLD: RENDER = True
+                else: RENDER = False
 
-            if "running_r" not in globals():
-                running_r = ep_r
-            else:
-                running_r = 0.95*running_r + 0.05*ep_r
-            if running_r > DISPLAY_THRESHOLD: RENDER = True
-            else: RENDER = False
-
-            done = '| Achieve ' if env.unwrapped.hull.position[0] >= END_POINT else '| -----'
-            print('Episode:', i_episode,
-                done,
-                '| Running_r: %i' % int(running_r),
-                '| Epi_r: %.2f' % ep_r,
-                '| Exploration: %.3f' % var,
-                '| Pos: %.i' % int(env.unwrapped.hull.position[0]),
-                '| LR_A: %.6f' % sess.run(LR_A),
-                '| LR_C: %.6f' % sess.run(LR_C),
-                )
-            break
+                done = '| Achieve ' if env.unwrapped.hull.position[0] >= END_POINT else '| -----'
+                print('Episode:', i_episode,
+                    done,
+                    '| Running_r: %i' % int(running_r),
+                    '| Epi_r: %.2f' % ep_r,
+                    '| Exploration: %.3f' % var,
+                    '| Pos: %.i' % int(env.unwrapped.hull.position[0]),
+                    '| LR_A: %.6f' % sess.run(LR_A),
+                    '| LR_C: %.6f' % sess.run(LR_C),
+                    )
+                break
 
 
-        s = s_
-        sess.run(INCREASE_GS)
-    score_history.append(r)
-    print('episode ', i_episode, 'score %.2f' % r, '100 game vag %.2f' % np.mean(score_history[-100:]))
-    result[i_episode] = np.concatenate((s_, [r]))
-x = range(len(result))
-plt.subplot(3,1,1)
+            s = s_
+            sess.run(INCREASE_GS)
+        score_history.append(r)
+        print('episode ', i_episode, 'score %.2f' % r, '100 game vag %.2f' % np.mean(score_history[-100:]))
+        result[i_episode] = np.concatenate((s_, [r]))
+        x = range(len(result))
+        plt.subplot(3,1,1)
 
-plt.title('price line ,alpha = %s beta =%s'%(LR_A,LR_C))
-plt.plot(x,result[:,0])
-plt.plot(x, result[:, 2])
-plt.plot(x, result[:, 4])
-
-plt.subplot(3,1,2)
-plt.title('volume line ')
-plt.plot(x, result[:, 1])
-plt.plot(x, result[:, 3])
-plt.plot(x, result[:, 5])
-
-plt.subplot(3,1,3)
-plt.title('total profit line')
-plt.plot(x, result[:, 6],label = "reward",color= 'coral')
-plt.legend(loc='upper right')
+        plt.title('price line ,alpha = %s beta =%s'%(LR_A,LR_C))
+        plt.plot(x,result[:,0])
+        plt.plot(x, result[:, 2])
+        plt.plot(x, result[:, 4])
+        plt.plot(x, result[:, 6])
+        plt.plot(x, result[:, 8])
 
 
-plt.savefig("test_main")
 
+        plt.subplot(3,1,2)
+        plt.title('volume line ')
+        plt.plot(x, result[:, 1])
+        plt.plot(x, result[:, 3])
+        plt.plot(x, result[:, 5])
+        plt.plot(x, result[:, 7])
+        plt.plot(x, result[:, 7])
+
+
+
+        plt.subplot(3,1,3)
+        plt.title('total profit line')
+        plt.plot(x, result[:, NUM_OF_SELLER*2],label = "reward",color= 'coral')
+        plt.legend(loc='upper right')
+
+
+        plt.savefig("test_main")
+
+run()

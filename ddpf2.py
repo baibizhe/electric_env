@@ -221,12 +221,12 @@ class Critic(object):
 
 class Agent(object):
     def __init__(self, alpha, beta, input_dims, tau, env, gamma=0.99, n_actions=2,
-                 max_size=1000000, layer1_size=400, layer2_size=300,
+                 buffer_max_size=1000000, layer1_size=400, layer2_size=300,
                  batch_size=64):
         self.gamma = gamma
         self.tau = tau
         self.n_actions = n_actions
-        self.memory = ReplayBuffer(max_size, input_dims, n_actions)
+        self.memory = ReplayBuffer(buffer_max_size, input_dims, n_actions)
         self.batch_size = batch_size
         self.sess = tf.compat.v1.Session()
         self.actor = Actor(alpha, n_actions, 'Actor', input_dims, self.sess,
