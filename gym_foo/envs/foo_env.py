@@ -18,35 +18,35 @@ class FooEnv(gym.Env):
     def __init__(self, min_buyer_price=300, max_seller_price=400, min_seller_price=300, max_buyer_price=400, \
                  num_of_seller=5, num_of_buyer=9, seller_data="data/seller_data", buyer_data="data/buyer_data"):
 
-        self.buyer_name = ["s_a", "s_b", "s_c", "s_d", "s_e", "s_f", "s_g", "s_h", "s_i"]  # 随机取的名字
-        self.seller_name = ["b_big", "b_mid", "b_mid2", "b_small", "b_small"]  # 随机取的名字
+
         self.max_buyer_price = max_buyer_price  # todo: 需要买房最高价格吗？
         self.min_buyer_price = min_buyer_price  # todo: 需要吗？
         self.num_of_seller = num_of_seller
         self.num_of_buyer = num_of_buyer
-        self.buyer_volume = generate_volume(self.num_of_buyer, TOTAL_INIT_BUYER_VALUE)  # 产生随机数 固定总量是100%
+        self.buyer_volume = np.loadtxt(buyer_data)
+        self.num_of_buyer = len(self.buyer_volume)
         self.buyer_price =   np.random.uniform(self.min_buyer_price, self.max_buyer_price, self.num_of_buyer).astype(
                 np.float16)# 找到当前状态的买方随机价格
         self.max_seller_price = max_seller_price  # 400元
         self.min_seller_price = min_seller_price  # 300元
         self.set_data_for_seller(seller_data)
+        self.num_of_seller = len(self.costfuncton_for_sellers)
         # self.deltaprice = 0.1
         # self.delta_volume = 10
         self.min_seller_volume = 0  # max_seller_volume在 set_data_for_seller()定义了
-        self.seller_volume = generate_volume(num_of_seller, TOTAL_INIT_SELLER_VALUE)  # 产生随机数 固定总量是150%
-        self.buyer_volume = generate_volume(num_of_buyer, TOTAL_INIT_BUYER_VALUE)  # 产生随机数 固定总量是100%
         #
         del_p = 0.05
         del_v = 15
-        act_high = np.array([[del_p,del_v]*num_of_seller]).flatten()
-        act_low= np.array([[-del_p,-del_v]*num_of_seller]).flatten()
-
+        act_high = np.array([[del_p,del_v]*self.num_of_seller]).flatten()
+        act_low= np.array([[-del_p,-del_v]*self.num_of_seller]).flatten()
+        self.buyer_name = ["buyer_%d" % i for i in range(self.num_of_buyer)]  # 随机取的名字
+        self.seller_name = ["seller_%d" % i for i in range(self.num_of_seller)]  # 随机取的名字
         self.action_space = spaces.Box(low=act_low,
-                                       high=act_high, shape=(num_of_seller * 2,), dtype=np.float16)
+                                       high=act_high, shape=(self.num_of_seller * 2,), dtype=np.float16)
 
-        self.observation_space = spaces.Box(low=0, high=np.max(self.max_seller_volume),
-                                            shape=(num_of_seller * 2 + num_of_buyer * 2,), \
-                                            dtype=np.float16)
+        # self.observation_space = spaces.Box(low=0, high=np.max(self.max_seller_volume),
+        #                                     shape=(num_of_seller * 2 + num_of_buyer * 2,), \
+        #                                     dtype=np.float16)
 
         self.seed()
 

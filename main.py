@@ -3,6 +3,7 @@ import numpy as  np
 from ddpf2 import Agent
 import  matplotlib.pyplot as plt
 import  tensorflow as tf
+import  numpy as np
 import  os
 tf.compat.v1.reset_default_graph()
 # from utils import  plotLearning
@@ -14,9 +15,11 @@ tf.compat.v1.reset_default_graph()
 TAU = 0.01
 BATCH_SIZE = 256
 BUFFER_SIZE = 50000
-NUM_OF_SELLER=5
+NUM_OF_SELLER=len(np.loadtxt("data/seller_data"))
+
 N_ACTIONS = NUM_OF_SELLER*2
-NUM_OF_BUYER=9
+NUM_OF_BUYER=42
+
 def run():
     alphas = [0.0005,0.001,0.005,0.01,0.05,0.1]
     betas = [0.0007,0.002,0.007,0.02,0.07,0.2]
@@ -27,7 +30,7 @@ def run():
         tf.compat.v1.reset_default_graph()
         np.random.seed(0)
         score_history = []
-        EPISODES = 500
+        EPISODES = 5
         result = np.zeros((EPISODES,agent.n_actions+1+1))
         for i in range(EPISODES):
             obs = env.reset()
@@ -47,7 +50,7 @@ def run():
                 #     print("reward > 0:episode end with  "+str(["%.2f"%val for val in new_state]))
                 # print("reward is :%.2f \n act is:%s \n new price volume is :%s"%(reward,str(act),str(new_state)))
                 j+=1
-                if j==3500:
+                if j==5:
                     done = True
                     result[i] = np.concatenate((new_state[0:NUM_OF_SELLER*2],[reward,np.mean(score_history[-50:])]))
                     print("episode end with  "+str(["%.2f"%val for val in new_state[0:NUM_OF_SELLER*2]]))
@@ -66,8 +69,7 @@ def run():
         plt.plot(x,result[:,0])
         plt.plot(x, result[:, 2])
         plt.plot(x, result[:, 4])
-        plt.plot(x, result[:, 6])
-        plt.plot(x, result[:, 8])
+
 
 
 
@@ -75,9 +77,7 @@ def run():
         plt.title('volume line ')
         plt.plot(x, result[:, 1])
         plt.plot(x, result[:, 3])
-        plt.plot(x, result[:, 5])
-        plt.plot(x, result[:, 7])
-        plt.plot(x, result[:, 9])
+
 
 
 
@@ -88,7 +88,7 @@ def run():
 
         plt.subplot(4, 1, 4)
         plt.title('50 game avg')
-        plt.plot(x, result[:, NUM_OF_SELLER * 2+1], label="avg", color='blue')
+        plt.plot(x, result[:, -1], label="avg", color='blue')
         plt.legend(loc='upper right')
 
         plt.savefig("image/my main with round %d"%ii)

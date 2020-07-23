@@ -168,8 +168,6 @@ import math
 import numpy as np
 
 import gym
-from gym import spaces
-from gym.utils import seeding
 
 env = gym.make('gym_foo:foo-v0')
 
@@ -201,8 +199,9 @@ model = QuadrotorModel(act_dim=act_dim)
 algorithm = DDPG(
     model, gamma=GAMMA, tau=TAU, actor_lr=ACTOR_LR, critic_lr=CRITIC_LR)
 agent = Agent(algorithm, obs_dim=obs_dim, act_dim=act_dim)
+# -------------这之上都是套用
 total_reward, steps = 0, 0
-EPISODES = 500
+EPISODES = 5000
 TAU = 0.01
 NUM_OF_SELLER=5
 N_ACTIONS = NUM_OF_SELLER*2
@@ -219,12 +218,10 @@ for i in range(EPISODES):
         batch_obs = np.expand_dims(obs, axis=0)
         action = agent.predict(batch_obs.astype('float32'))
         action = np.squeeze(action)
-
         # 给输出动作增加探索扰动，输出限制在 [-1.0, 1.0] 范围内
         action = np.random.normal(action, 1.0)
         action = np.clip(action, -1.0, 1.0)
-        action = action_mapping(action,env.action_space.low[0],env.action_space.high[0])
-        # 动作映射到对应的 实际动作取值范围 内, action_mapping是从parl.utils那里import进来的函数
+        action = action_mapping(action,env.action_space.low[0],env.action_space.high[0])        # 动作映射到对应的 实际动作取值范围 内, action_mapping是从parl.utils那里import进来的函数
 
         next_obs, reward, done, info = env.step(action)
 
@@ -237,7 +234,7 @@ for i in range(EPISODES):
                                       batch_next_obs, batch_terminal)
         obs = next_obs
         total_reward += reward
-        if steps > 300:
+        if steps > 3000:
             result[i] = np.concatenate((next_obs[0:NUM_OF_SELLER * 2], [reward, np.mean(score_history[-50:])]))
             print("episode end with  " + str(["%.2f" % val for val in next_obs[0:NUM_OF_SELLER * 2]]))
             break
