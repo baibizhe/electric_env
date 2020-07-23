@@ -14,14 +14,19 @@ TOTAL_INIT_BUYER_VALUE = int(TOTAL_INIT_SELLER_VALUE * 0.67)
 
 class FooEnv(gym.Env):
 
+
     def __init__(self, min_buyer_price=300, max_seller_price=400, min_seller_price=300, max_buyer_price=400, \
                  num_of_seller=5, num_of_buyer=9, seller_data="data/seller_data", buyer_data="data/buyer_data"):
+
         self.buyer_name = ["s_a", "s_b", "s_c", "s_d", "s_e", "s_f", "s_g", "s_h", "s_i"]  # 随机取的名字
         self.seller_name = ["b_big", "b_mid", "b_mid2", "b_small", "b_small"]  # 随机取的名字
         self.max_buyer_price = max_buyer_price  # todo: 需要买房最高价格吗？
         self.min_buyer_price = min_buyer_price  # todo: 需要吗？
         self.num_of_seller = num_of_seller
         self.num_of_buyer = num_of_buyer
+        self.buyer_volume = generate_volume(self.num_of_buyer, TOTAL_INIT_BUYER_VALUE)  # 产生随机数 固定总量是100%
+        self.buyer_price =   np.random.uniform(self.min_buyer_price, self.max_buyer_price, self.num_of_buyer).astype(
+                np.float16)# 找到当前状态的买方随机价格
         self.max_seller_price = max_seller_price  # 400元
         self.min_seller_price = min_seller_price  # 300元
         self.set_data_for_seller(seller_data)
@@ -84,10 +89,11 @@ class FooEnv(gym.Env):
         return np.array(self.state), reward, False, {}
 
     def reset(self):
+        # seller_volume = np.array([76633,59229,39805,34246,34204])
         seller_volume = generate_volume(self.num_of_seller, TOTAL_INIT_SELLER_VALUE)  # 产生随机数 固定总量是150%
-        buyer_volume = generate_volume(self.num_of_buyer, TOTAL_INIT_BUYER_VALUE)  # 产生随机数 固定总量是100%
-        buyer_price = self._get_buyer_random_price()  # 找到当前状态的买方随机价格
-        seller_prcie = np.array([self.min_seller_price] * self.num_of_seller)
+        seller_prcie = np.array([self.max_seller_price] * self.num_of_seller)
+        buyer_volume = self.buyer_volume  # 产生随机数 固定总量是100%
+        buyer_price = self.buyer_price  # 找到当前状态的买方随机价格
         self.state = np.array([],dtype=np.float32)
         for i in range(0,self.num_of_seller):
             self.state = np.concatenate((self.state,[seller_prcie[i]]))
@@ -101,8 +107,6 @@ class FooEnv(gym.Env):
     def render(self, mode='human'):
         pass
 
-    def _get_buyer_random_price(self):
-        return self.np_random.uniform(self.min_buyer_price, self.max_buyer_price, self.num_of_buyer).astype(np.float16)
 
     def _get_match_result(self):
         seller_data, buyer_data = [], []
