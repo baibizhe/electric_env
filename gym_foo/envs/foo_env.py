@@ -91,7 +91,7 @@ class FooEnv(gym.Env):
 
     def reset(self):
         seller_volume  =self.max_seller_volume
-        seller_volume = [i+np.random.uniform(-300,300) for i in seller_volume]
+        seller_volume = [i+np.random.uniform(-200,200) for i in seller_volume]
         # seller_volume = generate_volume(self.num_of_seller, int(sum(self.max_seller_volume)))  # 产生随机数 固定总量是150%
         #todo :reset的时候随机状态
         seller_prcie = np.array([self.max_seller_price] * self.num_of_seller)

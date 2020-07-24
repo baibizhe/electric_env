@@ -36,7 +36,7 @@ def run():
                     tf.compat.v1.reset_default_graph()
                     np.random.seed(0)
                     score_history = []
-                    EPISODES =800
+                    EPISODES =650
                     result = np.zeros((EPISODES,agent.n_actions+1+1))
                     for i in range(EPISODES):
                         obs = env.reset()
@@ -58,7 +58,7 @@ def run():
                             # if reward>0:
                             #     print(reward,new_state)
                             j+=1
-                            if j==500:
+                            if j==600:
                                 done = True
                                 result[i] = np.concatenate((new_state[0:NUM_OF_SELLER*2],[reward,np.mean(score_history[-50:])]))
                                 # print("episode end with  "+str(["%.2f"%val for val in new_state[0:NUM_OF_SELLER*2]]))
@@ -69,7 +69,7 @@ def run():
                         # print("-----------------------------------------------")
                     # filename = 'pendulum.png'
                     x = range(len(result))
-                    plt.figure(figsize=(6,10))
+                    plt.figure(figsize=(7,10))
                     plt.subplot(4,1,1)
                     plt.subplots_adjust(hspace=0.7)
                     plt.title('price line ,alpha = %s beta =%s ,gamma = %d,batch size = %d,tau = %d'%(str(alphas[ii]),str(betas[ii]),GAMMA,BATCH_SIZE,TAU))
