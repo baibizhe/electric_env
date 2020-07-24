@@ -6,16 +6,13 @@ import gym
 from gym import spaces
 from gym.utils import seeding
 from os import path
-from utils import rank, generate_volume, select_clear_amount
-
-TOTAL_INIT_SELLER_VALUE = 255000  # 这两个量可以设置
-TOTAL_INIT_BUYER_VALUE = int(TOTAL_INIT_SELLER_VALUE * 0.67)
+from utils import rank, generate_volume, select_clear_amount,calculate_total_amount
 
 
 class FooEnv(gym.Env):
 
 
-    def __init__(self, min_buyer_price=300, max_seller_price=400, min_seller_price=300, max_buyer_price=400, \
+    def __init__(self, min_buyer_price=300, max_seller_price=370, min_seller_price=300, max_buyer_price=400, \
                  num_of_seller=5, num_of_buyer=9, seller_data="data/seller_data", buyer_data="data/buyer_data"):
 
 
@@ -35,8 +32,8 @@ class FooEnv(gym.Env):
         # self.delta_volume = 10
         self.min_seller_volume = 0  # max_seller_volume在 set_data_for_seller()定义了
         #
-        del_p = 0.05
-        del_v = 15
+        del_p = 0.5
+        del_v = 50
         act_high = np.array([[del_p,del_v]*self.num_of_seller]).flatten()
         act_low= np.array([[-del_p,-del_v]*self.num_of_seller]).flatten()
         self.buyer_name = ["buyer_%d" % i for i in range(self.num_of_buyer)]  # 随机取的名字
@@ -44,9 +41,9 @@ class FooEnv(gym.Env):
         self.action_space = spaces.Box(low=act_low,
                                        high=act_high, shape=(self.num_of_seller * 2,), dtype=np.float16)
 
-        # self.observation_space = spaces.Box(low=0, high=np.max(self.max_seller_volume),
-        #                                     shape=(num_of_seller * 2 + num_of_buyer * 2,), \
-        #                                     dtype=np.float16)
+        self.observation_space = spaces.Box(low=0, high=np.max(self.max_seller_volume),
+                                            shape=(self.num_of_seller * 2 + self.num_of_buyer * 2,), \
+                                            dtype=np.float16)
 
         self.seed()
 
@@ -71,7 +68,7 @@ class FooEnv(gym.Env):
         for i in range(len(action)):
             new_num = self.state[i] + action[i]
             if i % 2 == 0:
-                self.state[i] = min(self.max_seller_price, max(0, new_num))
+                self.state[i] = min(self.max_seller_price, max(self.min_seller_price, new_num))
             else:
                 self.state[i] = min(self.max_seller_volume[index], max(0, new_num))
                 index += 1
@@ -79,7 +76,11 @@ class FooEnv(gym.Env):
     def step(self, action: np.ndarray):
         self._update_state(action)  # update self state with action
         match_result, clear_price = self._get_match_result()
-        reported_volume = [self.state[i] for i in range(1, self.num_of_seller * 2, 2)]
+        total_match_volume = calculate_total_amount(match_result)
+        factor= total_match_volume/sum(self.max_seller_volume)
+        reported_volume = [self.state[i]*factor for i in range(1, self.num_of_seller * 2, 2)]
+
+        # reported_volume  = [i[2] for i in match_result]
         cost_result = self._calculate_cost(reported_volume)
         reward = 0
         for i in range(self.num_of_seller):
@@ -89,8 +90,10 @@ class FooEnv(gym.Env):
         return np.array(self.state), reward, False, {}
 
     def reset(self):
-        # seller_volume = np.array([76633,59229,39805,34246,34204])
-        seller_volume = generate_volume(self.num_of_seller, TOTAL_INIT_SELLER_VALUE)  # 产生随机数 固定总量是150%
+        seller_volume  =self.max_seller_volume
+        seller_volume = [i+np.random.uniform(-300,300) for i in seller_volume]
+        # seller_volume = generate_volume(self.num_of_seller, int(sum(self.max_seller_volume)))  # 产生随机数 固定总量是150%
+        #todo :reset的时候随机状态
         seller_prcie = np.array([self.max_seller_price] * self.num_of_seller)
         buyer_volume = self.buyer_volume  # 产生随机数 固定总量是100%
         buyer_price = self.buyer_price  # 找到当前状态的买方随机价格

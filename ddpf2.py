@@ -7,7 +7,7 @@ tf.compat.v1.reset_default_graph()
 def random_uniform(f1,f2):
     return tf.compat.v1.initializers.random_uniform(f1,f2)
 class OUActionNoise(object):
-    def __init__(self, mu, sigma=0.15, theta=.2, dt=1e-2, x0=None):
+    def __init__(self, mu, sigma=0.1, theta=.1, dt=1e-2, x0=None):
         self.theta = theta
         self.mu = mu
         self.sigma = sigma
@@ -220,9 +220,9 @@ class Critic(object):
         self.saver.save(self.sess, self.checkpoint_file)
 
 class Agent(object):
-    def __init__(self, alpha, beta, input_dims, tau, env, gamma=0.99, n_actions=2,
-                 buffer_max_size=1000000, layer1_size=400, layer2_size=300,
-                 batch_size=64):
+    def __init__(self, alpha, beta, input_dims, tau, env, gamma=0.9, n_actions=2,
+                 buffer_max_size=1000000, layer1_size=128, layer2_size=128,
+                 batch_size=16):
         self.gamma = gamma
         self.tau = tau
         self.n_actions = n_actions
