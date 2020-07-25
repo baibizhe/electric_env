@@ -12,7 +12,7 @@ from utils import rank, generate_volume, select_clear_amount,calculate_total_amo
 class FooEnv(gym.Env):
 
 
-    def __init__(self, min_buyer_price=300, max_seller_price=370, min_seller_price=300, max_buyer_price=400, \
+    def __init__(self, min_buyer_price=300, max_seller_price=370, min_seller_price=300, max_buyer_price=370, \
                  num_of_seller=5, num_of_buyer=9, seller_data="data/seller_data", buyer_data="data/buyer_data"):
 
 
@@ -83,11 +83,15 @@ class FooEnv(gym.Env):
         # reported_volume  = [i[2] for i in match_result]
         cost_result = self._calculate_cost(reported_volume)
         reward = 0
+        info = []
         for i in range(self.num_of_seller):
             volume = select_clear_amount(self.seller_name[i], match_result)
-            reward += volume * clear_price - cost_result[i]
-
-        return np.array(self.state), reward, False, {}
+            single_r = volume * clear_price - cost_result[i]
+            reward += single_r
+            info.append(single_r)
+        info.append(calculate_total_amount(match_result))
+        info.append(clear_price)
+        return np.array(self.state), reward, False, info
 
     def reset(self):
         seller_volume  =self.max_seller_volume

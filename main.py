@@ -23,8 +23,8 @@ NUM_OF_BUYER=42
 
 def run():
     graph_num = 0
-    alphas = [0.001,0.0001,0.0002,0.001,0.05,0.1]
-    betas = [0.002,0.0001,0.002,0.005,0.07,0.2]
+    alphas = [0.001,0.0001,0.0002,0.001]
+    betas = [0.002,0.0001,0.002,0.005]
     for TAU in TAUS:
         for GAMMA in GAMMAS:
             for BATCH_SIZE in BATCH_SIZES:
@@ -36,8 +36,8 @@ def run():
                     tf.compat.v1.reset_default_graph()
                     np.random.seed(0)
                     score_history = []
-                    EPISODES =650
-                    result = np.zeros((EPISODES,agent.n_actions+1+1))
+                    EPISODES =1000
+                    result = np.zeros((EPISODES,NUM_OF_SELLER+1+1+1))
                     for i in range(EPISODES):
                         obs = env.reset()
                         print(i)
@@ -47,6 +47,14 @@ def run():
                         while not done:
                             act = agent.choose_action(obs).astype(np.float16)
                             # print("action is %s"%str(act))
+                            j += 1
+                            if j == 600:
+                                new_state, reward, done, info = env.step(act)
+                                agent.remember(obs, act, reward, new_state, int(done))
+                                agent.learn()
+                                done = True
+                                result[i] = np.concatenate((info, [reward]))
+                                break
                             new_state, reward, done, info = env.step(act)
                             agent.remember(obs, act, reward, new_state, int(done))
                             agent.learn()
@@ -57,10 +65,7 @@ def run():
                             # print("reward is :%.2f \n act is:%s \n new price volume is :%s"%(reward,str(act),str(new_state)))
                             # if reward>0:
                             #     print(reward,new_state)
-                            j+=1
-                            if j==600:
-                                done = True
-                                result[i] = np.concatenate((new_state[0:NUM_OF_SELLER*2],[reward,np.mean(score_history[-50:])]))
+
                                 # print("episode end with  "+str(["%.2f"%val for val in new_state[0:NUM_OF_SELLER*2]]))
                                 # result[i] = new_state
                         # volume = sum([new_state[1], new_state[3], new_state[5]])
@@ -69,34 +74,36 @@ def run():
                         # print("-----------------------------------------------")
                     # filename = 'pendulum.png'
                     x = range(len(result))
-                    plt.figure(figsize=(7,10))
-                    plt.subplot(4,1,1)
+                    plt.figure(figsize=(8,15))
+                    plt.rcParams['font.sans-serif'] = ['SimHei']
+                    plt.subplot(5,1,1)
                     plt.subplots_adjust(hspace=0.7)
-                    plt.title('price line ,alpha = %s beta =%s ,gamma = %d,batch size = %d,tau = %d'%(str(alphas[ii]),str(betas[ii]),GAMMA,BATCH_SIZE,TAU))
+                    plt.title('随机挑选的大发电商利润 \n,alpha = %s beta =%s ,gamma = %.3f,batch size = %.1f,tau = %.3f'%(str(alphas[ii]),str(betas[ii]),GAMMA,BATCH_SIZE,TAU))
                     plt.plot(x,result[:,0])
-                    plt.plot(x, result[:, 2])
                     plt.plot(x, result[:, 4])
 
 
+                    plt.subplot(5,1,2)
+                    plt.title('随机挑选的中等发电商利润 ')
+                    plt.plot(x, result[:, 9])
+                    plt.plot(x, result[:, 15])
 
+                    plt.subplot(5, 1, 3)
+                    plt.title('随机挑选的小发电商利润 ')
+                    plt.plot(x, result[:, 23])
+                    plt.plot(x, result[:, 25])
 
-                    plt.subplot(4,1,2)
-                    plt.title('volume line ')
-                    plt.plot(x, result[:, 1])
-                    plt.plot(x, result[:, 3])
-
-
-
-
-                    plt.subplot(4,1,3)
-                    plt.title('total profit line')
-                    plt.plot(x, result[:, NUM_OF_SELLER*2],label = "reward",color= 'coral')
+                    plt.subplot(5, 1, 4)
+                    plt.title('总成交容量')
+                    plt.plot(x, result[:,-3], label="总成交容量", color='blue')
                     plt.legend(loc='upper right')
 
-                    plt.subplot(4, 1, 4)
-                    plt.title('50 game avg')
-                    plt.plot(x, result[:, -1], label="avg", color='blue')
+                    plt.subplot(5,1,5)
+                    plt.title('总利润')
+                    plt.plot(x, result[:,-1],label = "发电商总利润",color= 'coral')
                     plt.legend(loc='upper right')
+
+
 
                     plt.savefig("image/my main with round %d"%graph_num)
                     plt.clf()

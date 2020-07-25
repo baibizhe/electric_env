@@ -104,7 +104,7 @@ class Actor(object):
             batch1 = tf.compat.v1.layers.batch_normalization(dense1)  #ensure iid
 
             # layer1_activation = tf.nn.relu(batch1)
-            layer1_activation=tf.nn.softmax(batch1)
+            layer1_activation=tf.nn.relu(batch1)
             f2 = 1. / np.sqrt(self.fc2_dims)
             dense2 = tf.compat.v1.layers.dense(layer1_activation, units=self.fc2_dims,
                                      kernel_initializer=random_uniform(-f2, f2),

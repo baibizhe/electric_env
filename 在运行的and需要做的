@@ -1,6 +1,12 @@
+目前第一目标：调整reward function 其他超参数可以推后一下。但还没想好。
+-----------------------------------------------------------------------
 本电脑在运行原版本的算法，算法外的超参数不一样
 大笔记本在运行DDPG加了一层神经网络，神经元数目的=70,50 ， actor隐藏层激活函数全部为relu，
 明日可调：（1） critic 输出层lossfcuntion 可否换成别的（现在为MSE）
-         （2） 激活函数  可选 SWISH ， Leaky ReLU ， Maxout
+         （2） 激活函数  可选 SWISH ， Leaky ReLU ， Maxout   https://www.cnblogs.com/makefile/p/activation-function.html
           （3） 是否需要加 L1,L1 正则化防止过拟合
            （4） 效果不满意就加层数。 我觉得很大可能是需要的加层数，别忘了正则化
+学习率目前看哪里0.001 0.002是收敛的 ， batchszie  16 128收敛。 gamma没看出来
+7.25 神经网络两层，softmax + sigmod  ，  虽然收敛了， 但我怀疑softmax在这里的合理性，所以换成了 relu +sigmoid
+
+
