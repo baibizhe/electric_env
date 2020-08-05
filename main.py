@@ -36,11 +36,10 @@ def run():
                     tf.compat.v1.reset_default_graph()
                     np.random.seed(0)
                     score_history = []
-                    EPISODES =1000
+                    EPISODES =500
                     result = np.zeros((EPISODES,NUM_OF_SELLER+1+1+1))
                     for i in range(EPISODES):
                         obs = env.reset()
-                        print(i)
                         # print(" episode start with"+str(["%.2f" % val for val in obs[0:NUM_OF_SELLER * 2]]))
                         done = False
                         j = 0
@@ -48,7 +47,7 @@ def run():
                             act = agent.choose_action(obs).astype(np.float16)
                             # print("action is %s"%str(act))
                             j += 1
-                            if j == 300:
+                            if j == 600:
                                 new_state, reward, done, info = env.step(act)
                                 agent.remember(obs, act, reward, new_state, int(done))
                                 agent.learn()
