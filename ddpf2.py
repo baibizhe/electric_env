@@ -103,17 +103,17 @@ class Actor(object):
                                      bias_initializer=random_uniform(-f1, f1))
             batch1 = tf.compat.v1.layers.batch_normalization(dense1)  #ensure iid
 
-            layer1_activation=tf.nn.leaky_relu(batch1)
+            layer1_activation=tf.nn.softmax(batch1)
             f2 = 1. / np.sqrt(self.fc2_dims)
             dense2 = tf.compat.v1.layers.dense(layer1_activation, units=self.fc2_dims,
                                      kernel_initializer=random_uniform(-f2, f2),
                                      bias_initializer=random_uniform(-f2, f2))
             batch2 = tf.compat.v1.layers.batch_normalization(dense2)#ensure iid
-            layer2_activation = tf.nn.leaky_relu(batch2)
+            layer2_activation = tf.nn.sigmoid(batch2)
 
             f3 = 0.003
             mu = tf.compat.v1.layers.dense(layer2_activation, units=self.n_actions,
-                            activation='relu',
+                            activation='tanh',
                             kernel_initializer= random_uniform(-f3, f3),
                             bias_initializer=random_uniform(-f3, f3))
             self.mu = tf.multiply(mu, self.action_bound)
@@ -175,7 +175,7 @@ class Critic(object):
                                      bias_initializer=random_uniform(-f1, f1))
             batch1 = tf.compat.v1.layers.batch_normalization(dense1)
             # batch1 = dense1
-            layer1_activation = tf.nn.leaky_relu(batch1)
+            layer1_activation = tf.nn.softmax(batch1)
 
             f2 = 1. / np.sqrt(self.fc2_dims)
             dense2 = tf.compat.v1.layers.dense(layer1_activation, units=self.fc2_dims,
@@ -187,14 +187,16 @@ class Critic(object):
             action_in = tf.compat.v1.layers.dense(self.actions, units=self.fc2_dims,
                                         activation='relu')
             state_actions = tf.add(batch2, action_in)
-            state_actions = tf.nn.leaky_relu(state_actions)
+            state_actions = tf.nn.sigmoid(state_actions)
 
             f3 = 0.003
             self.q = tf.compat.v1.layers.dense(state_actions, units=1,
                                kernel_initializer=random_uniform(-f3, f3),
                                bias_initializer=random_uniform(-f3, f3),
                                kernel_regularizer=tf.keras.regularizers.l2(0.01))
-            self.loss = tf.compat.v1.losses.mean_squared_error(self.q_target, self.q)
+            # self.loss = tf.compat.v1.losses.mean_squared_error(self.q_target, self.q)
+            self.loss = tf.compat.v1.losses.huber_loss(self.q_target, self.q)
+
 
     def predict(self, inputs, actions):
         return self.sess.run(self.q,
