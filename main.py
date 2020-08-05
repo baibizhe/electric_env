@@ -48,7 +48,7 @@ def run():
                             act = agent.choose_action(obs).astype(np.float16)
                             # print("action is %s"%str(act))
                             j += 1
-                            if j == 600:
+                            if j == 300:
                                 new_state, reward, done, info = env.step(act)
                                 agent.remember(obs, act, reward, new_state, int(done))
                                 agent.learn()
@@ -70,7 +70,7 @@ def run():
                                 # result[i] = new_state
                         # volume = sum([new_state[1], new_state[3], new_state[5]])
                         score_history.append(reward)
-                        print('episode ', i, 'score %s' % str(format(reward,",.1f")), '100 game vag %.2f' % np.mean(score_history[-100:]))
+                        print('第%s幕'%str(i), '得分（利润） %s' % str(format(reward,",.1f")), '100 game vag %.2f' % np.mean(score_history[-100:]))
                         # print("-----------------------------------------------")
                     # filename = 'pendulum.png'
                     x = range(len(result))
