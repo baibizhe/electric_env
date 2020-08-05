@@ -77,6 +77,7 @@ class FooEnv(gym.Env):
         self._update_state(action)  # update self state with action
         match_result, clear_price = self._get_match_result()
         total_match_volume = calculate_total_amount(match_result)
+
         factor= total_match_volume/sum(self.max_seller_volume)
         reported_volume = [self.state[i]*factor for i in range(1, self.num_of_seller * 2, 2)]
 

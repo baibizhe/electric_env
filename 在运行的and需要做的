@@ -1,9 +1,9 @@
 todo：（1）可以尝试减少神经网络层数,参考stock的激活函数
        （2）调整reward function
        （3） critic 输出层lossfcuntion 可否换成别的（现在为MSE）
-       （4） 是否需要加 L1,L1 正则化防止过拟合
        （5） 效果不满意就加减层数。 我觉得很大可能是需要的加层数，别忘了正则化
-
+        (6) 多轮博弈淘汰环境一些发电商， 环境会变
+        （7） 给买方设计策略
        -----------------------------------------------------------------------
 实验 https://github.com/hongyaozhu98/DDPG-Stock-Trading/blob/master/DDPG.py 需要降级python tf
 
@@ -16,6 +16,8 @@ todo：（1）可以尝试减少神经网络层数,参考stock的激活函数
               （2） 全部换成 leakyrealu,激活函数都换leakyrealu  正在运行。 明显不收敛
               （3）换成  softmax + sigmod +tanh      ,critic  softmox +sigmoid
                     critic损失函数换成了 huberloss    https://blog.csdn.net/wfei101/article/details/82531737   运行吧
+8.6 todo：（7） 给买方设计策略  假如这一轮出清价格偏低，下一轮多报电量
+
 
 
 
