@@ -195,7 +195,7 @@ class Critic(object):
                                bias_initializer=random_uniform(-f3, f3),
                                kernel_regularizer=tf.keras.regularizers.l2(0.01))
             # self.loss = tf.compat.v1.losses.mean_squared_error(self.q_target, self.q)
-            self.loss = tf.compat.v1.losses.huber_loss(self.q_target, self.q)
+            self.loss = tf.compat.v1.losses.mean_squared_error(self.q_target, self.q)
 
 
     def predict(self, inputs, actions):
@@ -300,6 +300,7 @@ class Agent(object):
         _ = self.critic.train(state, action, target)
 
         a_outs = self.actor.predict(state)
+        # print("a_outs",a_outs)
         grads = self.critic.get_action_gradients(state, a_outs)
         # print("actor:",grads[0])
         self.actor.train(state, grads[0])

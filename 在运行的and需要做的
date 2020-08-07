@@ -15,8 +15,9 @@ todo：（1）可以尝试减少神经网络层数,参考stock的激活函数
           尝试（1） 全部换成relu  结果，到爆炸的时间稍长一些
               （2） 全部换成 leakyrealu,激活函数都换leakyrealu  正在运行。 明显不收敛
               （3）换成  softmax + sigmod +tanh      ,critic  softmox +sigmoid
-                    critic损失函数换成了 huberloss    https://blog.csdn.net/wfei101/article/details/82531737   运行吧
+                    critic损失函数换成了 huberloss    https://blog.csdn.net/wfei101/article/details/82531737
 8.6 todo：（7） 给买方设计策略  假如这一轮出清价格偏低，下一轮多报电量
+    运行结果：  huberloss不收敛,但发现foo_env里面计算出清容量有问题，需要重新设计算法。要不然会出现大量负值
 
 
 

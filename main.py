@@ -12,7 +12,7 @@ tf.compat.v1.reset_default_graph()
 # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 #todo : 改成p-replay buffer
 # todo: 给噪声加衰减函数
-TAUS = [0.1,0.01,0.001]
+TAUS = [0.01,0.01,0.001]
 BATCH_SIZES = [16,32,128]
 GAMMAS =[0.9,0.999,0.99]
 BUFFER_SIZE = 50000
@@ -31,7 +31,7 @@ def run():
                 for ii in range((len(alphas))):
                     graph_num+=1
                     env = gym.make('gym_foo:foo-v0')
-                    agent = Agent(alpha=alphas[ii], beta=betas[ii], input_dims=[N_ACTIONS+NUM_OF_BUYER*2], tau=TAU, env=env, batch_size=BATCH_SIZE, layer1_size=128,
+                    agent = Agent(alpha=alphas[ii], beta=betas[ii], input_dims=[N_ACTIONS], tau=TAU, env=env, batch_size=BATCH_SIZE, layer1_size=128,
                                   layer2_size=128, n_actions=N_ACTIONS,buffer_max_size=BUFFER_SIZE)
                     tf.compat.v1.reset_default_graph()
                     np.random.seed(0)
@@ -47,7 +47,7 @@ def run():
                             act = agent.choose_action(obs).astype(np.float16)
                             # print("action is %s"%str(act))
                             j += 1
-                            if j == 600:
+                            if j == 500:
                                 new_state, reward, done, info = env.step(act)
                                 agent.remember(obs, act, reward, new_state, int(done))
                                 agent.learn()
