@@ -38,12 +38,18 @@ def run():
                     score_history = []
                     EPISODES =500
                     result = np.zeros((EPISODES,NUM_OF_SELLER+1+1+1))
+
                     for i in range(EPISODES):
+                        noise_coe = 1
+                        num_e = 1000  # 轮数
+
+
                         obs = env.reset()
                         # print(" episode start with"+str(["%.2f" % val for val in obs[0:NUM_OF_SELLER * 2]]))
                         done = False
                         j = 0
                         while not done:
+
                             act = agent.choose_action(obs).astype(np.float16)
                             # print("action is %s"%str(act))
                             j += 1
