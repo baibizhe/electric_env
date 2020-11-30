@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import tensorflow as tf
-# from tensorflow.initializers import random_uniform
 tf.compat.v1.disable_eager_execution()
 tf.compat.v1.reset_default_graph()
 def random_uniform(f1,f2):
@@ -209,7 +208,6 @@ class Critic(object):
                                  self.q_target: q_target})
 
     def get_action_gradients(self, inputs, actions):
-        # print("critic:",self.sess.run(self.action_gradients, feed_dict={self.input: inputs,self.actions: actions}))
         return self.sess.run(self.action_gradients,
                              feed_dict={self.input: inputs,
                                         self.actions: actions})
